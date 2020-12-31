@@ -1,0 +1,878 @@
+frameRate(100);
+var scene = 'main';
+var leftKeyDown = false;
+var rightKeyDown = false;
+var upKeyDown = false;
+var downKeydown = false;
+
+var kKeyDown = false;
+var keys =  [];
+
+var mouseIsClicked = false;
+var p = -288;
+var s = 600;
+var px = 0;
+var py = 200;
+var ph = 50;
+var pw = 50;
+var pjumps = 0;
+var ending = 519;
+
+var screen = [100, 100];
+
+var d="";
+var c=0;
+
+var level = 1;
+var to = 644;
+var move = true;
+var pspeed = 0;
+
+var sx = 0; 
+var sy = 283;
+
+
+var col = "Blue";
+
+
+
+var hack = false;
+
+var pgrav = 0;
+
+var deaths = 0;
+var pcanJump = false;
+
+// Player color
+var pcolor = color(17, 0, 250); 
+
+var bcolor = color(0, 213, 255);
+
+
+smooth();
+
+
+var button = function(x, y, w, h, pg, txt, textsize){
+    
+    if(mouseX >= x && mouseX <= x + w && mouseY >= y && mouseY <= y + h){
+        
+        if(mouseIsClicked === true){
+            scene = pg;
+        }
+        else{
+            stroke(0, 32, 63);
+            strokeWeight(6);
+            fill(0, 32, 63);
+            rect(x, y, w, h);
+            cursor(HAND);
+    fill(173, 240, 209);
+            textFont(createFont("Segoe UI Light Bold"));
+            textSize(textsize);
+            textAlign(CENTER, CENTER);
+            text(txt, x + w/2, y + h/2);
+        }
+    
+    }
+    else{
+        noStroke();
+    fill(173, 240, 209);
+        rect(x, y, w, h);
+        fill(0, 32, 63);
+        textFont(createFont("Segoe UI Light Bold"));
+        textSize(textsize);
+        textAlign(CENTER, CENTER);
+        text(txt, x + w/2, y + h/2);
+    }
+    
+};
+
+var resetPlayer = function( ) {
+    
+    //Resets vars
+    pgrav = 0; //Resets gravity
+    pspeed = 0; //Resets velocity
+    px = sx; //Sets x to the spawn x
+    py = sy; //Sets y to the spwn y
+    pcanJump = true; //So we can't jump right off the bat
+    screen = [100,100];
+    deaths++;
+
+   
+
+};
+
+var spike = function(x, y, w, h) {
+    
+    fill(171, 171, 171);
+    triangle(x,y+20,x+5,y,x+10,y+20);
+    triangle(x+10,y+20,x+15,y,x+20,y+20);
+    
+    if(px + pw > x && px < x + w && py + ph > y + 1 && py < y + h) { 
+        resetPlayer();
+    }
+    
+};
+
+var block = function(x, y, w, h) {
+
+    
+    fill(207, 167, 67);
+    rect(x, y, w, h);
+    fill(0, 191, 13);
+    rect(x,y,w,10);
+
+    
+    if(px + pw > x && px < x + w && py + ph > y && py < y + h) {
+       
+        if(px + pw > x && px < x + w && (py - pgrav) + ph > y && (py - pgrav) < y + h) {
+            
+           
+          
+            if(pspeed > 0) {
+                
+              
+                px = x - pw;
+            } else if(pspeed < 0) {
+                 
+                px = x + w;
+            }
+
+         
+            pspeed = 0;
+        }
+
+     
+        if((px + pspeed) + pw > x && (px + pspeed) < x + w && py + ph > y && py < y + h) {
+            
+        
+            
+            if(pgrav >= 0) {
+               
+                
+                
+                pgrav = 0;
+               
+                py = y - ph;
+                
+                
+                pcanJump = true;
+                
+                pjumps = 0;
+                
+            } else {
+              
+                pgrav = 0.1;
+                
+              
+                py = y + h;
+            }
+        }
+    }
+    
+  
+    
+};
+
+var sign = function(message,x, y, w, h,tx,ty,ts) {
+
+    noStroke();
+    fill(207, 145, 0);
+    rect(x + 13, y + 5, 18, 46);
+    fill(207, 145, 0);
+    rect(x, y, 46, 24);
+    fill(255, 255, 255);
+    rect(x + 4,y + 2,37, 20);
+    textSize(10);
+    fill(255);
+
+
+    
+
+    
+    if(px + pw > x && px < x + w && py + ph > y && py < y + h) {
+        textSize(ts);
+        fill(0, 0, 0);
+        text(message, tx, ty);
+    }
+    
+  
+    
+};
+
+var tramp = function(x, y, w, h) {
+
+    noStroke();
+    fill(225, 255, 0);
+    text("⬆️",x,y,w,h);
+    fill(191, 191, 191);
+
+    
+
+    
+    if(px + pw > x && px < x + w && py + ph > y && py < y + h) {
+        
+        pgrav = -16;
+        pcanJump = false;
+        
+        pjumps = 1;
+        
+        
+        
+        
+    }
+    
+  
+    
+};
+
+var lava = function(x, y, w, h) { 
+    fill(255, 112, 10); 
+    rect(x, y, w, h); 
+
+   
+    if(px + pw > x && px < x + w && py + ph > y + 1 && py < y + h) { 
+        resetPlayer();
+    } 
+    
+};
+
+var portal = function(x, y, w, h) { 
+     
+     if (c >= 255)  {
+            c=0;
+        } else  {
+            c++;
+        }
+        colorMode(HSB);
+        fill(c, 255, 255);
+        colorMode(RGB);
+    rect(x, y, w, h);
+    
+    
+    if(px + pw > x && px < x + w && py + ph > y + 1 && py < y + h) { 
+        
+    
+        level ++; //Adds one to the level variable
+        
+        //Since we touched the portal, lets reset for the next level
+        for(var fffff = 0; fffff < 10; fffff++) {
+            resetPlayer(); //Resets the player
+            deaths--;
+        }
+        
+        
+        
+        
+    } //End collision if
+    
+}; 
+
+var water = function(x, y, w, h) {
+
+    noStroke();
+    fill(0, 102, 255,40);
+    rect(x, y, w, h);
+    fill(191, 191, 191);
+
+    
+
+    
+    if(px + pw > x && px < x + w && py + ph > y && py < y + h) {
+       
+        pgrav = 0.5;
+        
+  
+        pcanJump = true;
+        
+        fill(0, 242, 255);
+        
+        
+        
+        
+        
+    } 
+    
+  
+    
+};
+
+var game = function(){
+    cursor("default");
+    fill(0,213,255);
+    rect(0,0,600,600);
+  
+    
+    fill(pcolor);
+    rect(px, py, pw, ph);
+    
+   
+    pgrav += 0.5;
+    
+ 
+    pspeed = 0;
+    
+    
+    if(leftKeyDown === true) {
+        
+        pspeed = -3;
+        screen[0] += 6;
+    }
+    if(rightKeyDown === true) {
+        
+        pspeed = 3;
+        screen[0] -= 6;
+    }
+
+   
+   if(pgrav > 0 && pjumps < 2) {
+        pcanJump = true;
+    }
+
+
+    if(upKeyDown && pcanJump === true) {
+        
+
+        pjumps ++;
+
+        pgrav = -10;
+        pcanJump = false;
+    }
+    
+    if(downKeydown === true){
+        pgrav = 10;
+        
+    }
+    
+    if(kKeyDown === true){
+        resetPlayer();
+        
+        deaths --;
+    }
+    
+ 
+    px += pspeed;
+    
+  
+    py += pgrav;
+    
+   
+    
+      if(screen===[100,100]){
+         screen[0] -= 5;
+      }
+      
+      
+  
+    
+   
+   
+  
+  fill(0);
+  textSize(20);
+  text("Deaths: " +deaths, 11, 40);
+  
+  fill(0);
+  textSize(40);
+  text("Level: " +level, 419, 40);
+  
+  
+ 
+  
+    
+};
+
+draw = function() {
+   
+  if(scene==='main'){
+      smooth();
+   
+   noStroke();
+   textFont(createFont("Trebuchet MS"));
+   background(bcolor);
+   fill(0);
+   textSize(60);
+   text("PLATFORM ", p, 100);
+   text("WORLD",s, 160);
+   
+   
+   
+    if(move===true){
+       p += 5;
+       s -= 5;
+       to -= 5;
+       
+   }
+    
+    if(p>=160){
+        p -= 5;
+        
+    }
+    
+    if(s<=196){
+        s += 5;
+       
+    }
+    
+    if(to<=217){
+        to += 5;
+    }
+    
+    
+    
+    
+  
+  
+  //smaller platform
+  fill(207, 167, 67);
+  rect(0, 459, 167, 148, 6);
+  
+  fill(85, 212, 38);
+  rect(0, 459, 16, 56, 8);
+  rect(12, 458, 16, 78, 8);
+  rect(24, 459, 16, 56, 8);
+  rect(36, 458, 16, 78, 8);
+  rect(48, 459, 16, 56, 8);
+  rect(60, 458, 16, 78, 8);
+  rect(72, 459, 16, 56, 8);
+  rect(84, 458, 16, 78, 8);
+  rect(96, 459, 16, 56, 8);
+  rect(108, 458, 16, 78, 8);
+  rect(120, 459, 16, 56, 8);
+  rect(132, 458, 16, 78, 8);
+  rect(148, 458, 20, 56, 8);
+  
+  
+  //bigger platform
+  fill(207, 167, 67);
+  rect(208, 394, 167, 209, 6);
+  
+  fill(85, 212, 38);
+  rect(0, 459, 16, 56, 8);
+  rect(208, 393, 16, 78, 8);
+  rect(220, 393, 16, 56, 8);
+  rect(232, 393, 16, 78, 8);
+  rect(244, 393, 16, 56, 8);
+  rect(256, 393, 16, 78, 8);
+  rect(268, 393, 16, 56, 8);
+  rect(280, 393, 16, 78, 8);
+  rect(292, 393, 16, 56, 8);
+  rect(304, 393, 16, 78, 8);
+  rect(316, 393, 16, 56, 8);
+  rect(328, 393, 16, 78, 8);
+  rect(340, 393, 20, 56, 8);
+  rect(360, 393, 16, 78, 8);
+  
+  //block 
+  fill(0, 68, 255);
+  pushMatrix();
+  rotate(50);
+  rect(451, 5, 20, 20);
+  popMatrix();
+  
+ 
+  
+  
+  
+  
+  //normal platform
+  fill(207, 167, 67);
+  rect(426, 423, 175, 183, 6);
+  
+  fill(85, 212, 38);
+  rect(426, 422, 16, 56, 8);
+  rect(426 + 12, 422, 16, 78, 8);
+  rect(426 + 24, 422, 16, 56, 8);
+  rect(426 + 36, 422, 16, 78, 8);
+  rect(426 + 48, 422, 16, 56, 8);
+  rect(426 + 60, 422, 16, 78, 8);
+  rect(426 + 72, 422, 16, 56, 8);
+  rect(426 + 84, 422, 16, 78, 8);
+  rect(426 + 96, 422, 16, 56, 8);
+  rect(426 + 108, 422, 16, 78, 8);
+  rect(426 + 120, 422, 16, 56, 8);
+  rect(426 + 132, 422, 16, 78, 8);
+  rect(426 + 145, 422, 20, 56, 8);
+  rect(426 + 157, 422, 16, 78, 8);
+  
+ spike(50, 439, 20, 20);
+ spike(70, 439, 20, 20);
+ 
+ spike(504, 403, 20, 20);
+  
+  fill(128, 128, 128);
+  rect(218, 250, 143, 50, 6);
+  textSize(30);
+  fill(255);
+  text("PLAY", 250, 285);
+  
+  
+  fill(0);
+  textSize(60);
+  text("2", 281, to);
+  
+  
+  if(mouseX>=218&&mouseY>=250&&mouseX<=361&&mouseY<=300){
+     cursor("pointer");
+     
+      
+  } else{
+      cursor("default");
+  }
+  if(mouseIsPressed&&mouseX>=218&&mouseY>=250&&mouseX<=361&&mouseY<=300){
+      
+      scene = 'mode';
+     
+
+      
+  }
+  }
+  else if(scene==='mode'){
+      cursor("default");
+      background(153, 153, 153);
+      textSize(30);
+      fill(0);
+      text("Choose your block color", 136, 100);
+      
+      fill(17,0,250);
+      rect(153,219, 20, 20);
+      
+      textSize(12);
+      fill(0);
+      text("BLUE", 150, 204);
+      
+      
+       fill(250, 0, 0);
+      rect(209,219, 20, 20);
+      
+      textSize(12);
+      fill(0);
+      text("RED", 207, 204);
+      
+      
+      fill(0, 250, 38);
+      rect(265,219, 20, 20);
+      
+      textSize(12);
+      fill(0);
+      text("GREEN", 259, 204);
+      
+      fill(255, 79, 220);
+      rect(319,219, 20, 20);
+      
+      textSize(12);
+      fill(0);
+      text("PINK", 316, 204);
+      
+      fill(0, 0, 0);
+      rect(370,219, 20, 20);
+      
+      textSize(12);
+      fill(0);
+      text("BLACK", 363, 204);
+      
+      fill(255, 255, 255);
+      rect(423,219, 20, 20);
+      
+      textSize(12);
+      fill(0);
+      text("WHITE", 417, 204);
+      
+      
+      
+      fill(255, 102, 0);
+      rect(181,289, 20, 20);
+      
+      textSize(12);
+      fill(0);
+      text("ORANGE", 168, 279);
+      
+      
+      fill(0, 255, 247);
+      rect(240,289, 20, 20);
+      
+      textSize(12);
+      fill(0);
+      text("TEAL", 238, 279);
+      
+      fill(242, 255, 0);
+      rect(294,289, 20, 20);
+      
+      textSize(12);
+      fill(0);
+      text("YELLOW", 284, 279);
+      
+      fill(132, 0, 255);
+      rect(347,289, 20, 20);
+      
+      textSize(12);
+      fill(0);
+      text("PURPLE", 337, 279);
+      
+      fill(105, 105, 105);
+      rect(401,289, 20, 20);
+      
+      textSize(12);
+      fill(0);
+      text("GRAY", 398, 279);
+      
+      textSize(25);
+      text("Color: "+col, 234, 378);
+      
+
+      
+      //Color Functions
+          //{
+      if(col==="Blue"){
+          pcolor = color(17,0,250);
+      }
+      
+      if(col==='Red'){
+          pcolor = color(255, 0, 0);
+      }
+      
+      if(col==='Green'){
+          pcolor = color(0, 250, 38);
+      }
+      
+      if(col==='Pink'){
+          pcolor = color(255, 79, 220);
+      }
+      
+      if(col==='Black'){
+          pcolor = color(0, 0, 0);
+      }
+      
+      if(col==='White'){
+          pcolor = color(255, 255, 255);
+      }
+      
+      if(col==='Orange'){
+          pcolor = color(255, 102, 0);
+      }
+      
+      if(col==='Teal'){
+          pcolor = color(0,255,247);
+      }
+      
+      if(col==='Yellow'){
+          pcolor = color(242,255,0);
+      }
+      
+      if(col==='Purple'){
+          pcolor = color(132,0,255);
+      }
+      
+      if(col==='Gray'){
+          pcolor = color(105,105,105);
+      }
+      //}
+      
+      if(mouseIsPressed&&mouseX>=153&&mouseY>=219&&mouseX<=+153+20&&mouseY<=219+20){
+          col = 'Blue';
+      }
+      
+      if(mouseIsPressed&&mouseX>=209&&mouseY>=219&&mouseX<=+209+20&&mouseY<=219+20){
+          col = 'Red';
+      }
+      
+      if(mouseIsPressed&&mouseX>=265&&mouseY>=219&&mouseX<=+265+20&&mouseY<=219+20){
+          col = 'Green';
+      }
+      
+      if(mouseIsPressed&&mouseX>=319&&mouseY>=219&&mouseX<=+319+20&&mouseY<=219+20){
+          col = 'Pink';
+      }
+      
+      if(mouseIsPressed&&mouseX>=370&&mouseY>=219&&mouseX<=+370+20&&mouseY<=219+20){
+          col = 'Black';
+      }
+      
+      if(mouseIsPressed&&mouseX>=423&&mouseY>=219&&mouseX<=+423+20&&mouseY<=219+20){
+          col = 'White';
+      }
+      
+      if(mouseIsPressed&&mouseX>=181&&mouseY>=289&&mouseX<=181+20&&mouseY<=289+20){
+          col = 'Orange';
+      }
+      
+      if(mouseIsPressed&&mouseX>=240&&mouseY>=289&&mouseX<=240+20&&mouseY<=289+20){
+          col = 'Teal';
+      }
+      
+      if(mouseIsPressed&&mouseX>=294&&mouseY>=289&&mouseX<=294+20&&mouseY<=289+20){
+          col = 'Yellow';
+      }
+      
+      if(mouseIsPressed&&mouseX>=347&&mouseY>=289&&mouseX<=347+20&&mouseY<=289+20){
+          col = 'Purple';
+      }
+      
+      if(mouseIsPressed&&mouseX>=401&&mouseY>=289&&mouseX<=401+20&&mouseY<=289+20){
+          col = 'Gray';
+      }
+      
+      
+    
+      
+      
+
+   fill(105,105,105);
+   rect(257, 438, 100, 40);
+   fill(255);
+   textSize(20);
+   text("START", 277 ,466);
+   
+   if(mouseIsPressed&&mouseX>=257&&mouseY>=438&&mouseX<=257+100&&mouseY<=438+40){
+       scene = 'game';
+   }
+      
+  }
+  else if(scene==='game'){
+      game();
+      if(level===1){
+          block(screen[0]+ 222, screen[1]+344, 100, 58);
+          block(screen[0]+ 298, screen[1]+320, 100, 69);
+          block(screen[0]+ 386, screen[1]+290, 100, 106);
+          block(screen[0]+ 572, screen[1]+290, 100, 106);
+          block(screen[0]+ 670, screen[1]+252, 100, 144);
+          block(screen[0]+ 770, screen[1]+207, 100, 190);
+          portal(screen[0]+ 796, screen[1]+157,50, 50);
+          lava(screen[0]+ 482, screen[1]+290, 100, 106);
+          
+          block(-283, 487, 3517, 122);
+          
+           sign("You already know the\nrules to this game.\nIf not go to the link on\ncodeline 20.",screen[0]+414, screen[1]+239,50,50,screen[0]+377,screen[1]+181,13);
+      }
+       else if(level===2){
+      block(-500, 481, 1276, 122);
+      
+      tramp(screen[0]+100, screen[1]+259, 50, 50);
+      
+       block(screen[0]+164, screen[1]+331, 16, 50);
+       
+       block(screen[0]+552, screen[1]+331, 16, 50);
+       
+       lava(screen[0]+180, screen[1]+331, 373, 50);
+      
+      sign("TRAMP TIME!",screen[0]+-4, screen[1]+331, 50, 50,screen[0]+-31,screen[1]+316,17);
+      
+      portal(screen[0]+724, screen[1]+331, 50, 50);
+      
+      sign("WHOO-HOO! NICE!",screen[0]+605, screen[1]+331, 50, 50,screen[0]+561,screen[1]+316,17);
+      
+      } 
+      else if(level===3){
+        block(screen[0]+ 222, screen[1]+344, 100, 58);
+          block(screen[0]+ 298, screen[1]+320, 100, 69);
+          block(screen[0]+ 386, screen[1]+290, 100, 106);
+          
+          lava(screen[0]+485, screen[1]+290, 708, 98);
+          
+          block(screen[0]+ 602, screen[1]+122, 100, 26);
+          
+          block(screen[0]+ 824, screen[1]+71, 100, 26);
+          
+          block(screen[0]+ 1092, screen[1]+71, 100, 26);
+          
+          block(screen[0]+ 1192, screen[1]+71, 20, 310);
+          
+          water(screen[0]+ 1210, screen[1]+71, 413, 310);
+          
+          block(screen[0]+ 1622, screen[1]+71, 20, 310);
+          
+          portal(screen[0]+ 1572, screen[1]+332, 50, 50);
+  
+          block(-500, 481, 4308, 122);
+      }
+      else if(level===4){
+          block(-500, 481, 4308, 122);
+          sign("Take A DIVE!(wait didnt i say\nthat in the last game)",screen[0]+-4, screen[1]+331, 50, 50,screen[0]+-16,screen[1]+316,12);
+          
+          block(screen[0]+ 162, screen[1]+42, 20, 341);
+          
+          block(screen[0]+ 62, screen[1]+200, 100, 20);
+         
+          block(screen[0]+ -100, screen[1]+100, 100, 20);
+          
+          water(screen[0]+ 181, screen[1]+44, 806, 338);
+          
+      
+          spike(screen[0]+ 183, screen[1]+361, 20, 20);
+          spike(screen[0]+ 183+20, screen[1]+361, 20, 20);
+          spike(screen[0]+ 183+40, screen[1]+361, 20, 20);
+          spike(screen[0]+ 183+60, screen[1]+361, 20, 20);
+          spike(screen[0]+ 183+80, screen[1]+361, 20, 20);
+          spike(screen[0]+ 183+100, screen[1]+361, 20, 20);
+          spike(screen[0]+ 183+120, screen[1]+361, 20, 20);
+          spike(screen[0]+ 183+140, screen[1]+361, 20, 20);
+          spike(screen[0]+ 183+160, screen[1]+361, 20, 20);
+          spike(screen[0]+ 183+180, screen[1]+361, 20, 20);
+          spike(screen[0]+ 183+200, screen[1]+361, 20, 20);
+          spike(screen[0]+ 183+220, screen[1]+361, 20, 20);
+          spike(screen[0]+ 183+240, screen[1]+361, 20, 20);
+          spike(screen[0]+ 183+260, screen[1]+361, 20, 20);
+          spike(screen[0]+ 183+280, screen[1]+361, 20, 20);
+          spike(screen[0]+ 183+300, screen[1]+361, 20, 20);
+          spike(screen[0]+ 183+320, screen[1]+361, 20, 20);
+          spike(screen[0]+ 183+340, screen[1]+361, 20, 20);
+          spike(screen[0]+ 183+360, screen[1]+361, 20, 20);
+          spike(screen[0]+ 183+380, screen[1]+361, 20, 20);
+          spike(screen[0]+ 183+400, screen[1]+361, 20, 20);
+          spike(screen[0]+ 183+420, screen[1]+361, 20, 20);
+          spike(screen[0]+ 183+440, screen[1]+361, 20, 20);
+          spike(screen[0]+ 183+460, screen[1]+361, 20, 20);
+          
+          
+        
+      }
+          
+       
+  } 
+ 
+   
+
+   
+  
+  
+};
+
+
+keyPressed = function() {
+    if(keyCode === LEFT) {
+        leftKeyDown = true;    
+    }
+    if(keyCode === RIGHT) {
+        rightKeyDown = true;    
+    }
+    if(keyCode === UP) {
+        upKeyDown = true;
+    }
+    
+    if(keyCode === DOWN) {
+        downKeydown = true;
+    }
+    
+    if(keyCode === SHIFT){
+        kKeyDown = true;
+    }
+};
+keyReleased = function() {
+    
+    if(keyCode === LEFT) {
+        leftKeyDown = false;
+    }
+    if(keyCode === RIGHT) {
+        rightKeyDown = false;
+    }
+    if(keyCode === UP) {
+        upKeyDown = false;
+    }
+    
+    if(keyCode === DOWN) {
+        downKeydown = false;
+    }
+     
+    if(keyCode === SHIFT){
+        kKeyDown = false;
+    }
+};
